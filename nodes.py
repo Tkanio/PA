@@ -1,12 +1,13 @@
 import requests
 import urllib3
+import os
 from prometheus_client import start_http_server, Gauge
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-host = ""
-username = ""
-password = ""
+host = os.getenv("HOST")
+username = os.getenv("USERNAME")
+password = os.getenv("PASSWORD")
 base_url = f"https://{host}:8006/api2/json"
 
 vm_cpu_usage = Gauge('vm_cpu_usage_percent', 'CPU usage of VM', ['vm_name'])
