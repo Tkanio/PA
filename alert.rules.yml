@@ -1,0 +1,58 @@
+groups:
+  - name: proxmox-alerts
+    rules:
+    
+    - alert: NodeHighMemoryUsage
+      expr: (vm_memory_used_megabytes{job="python_exporter"} / vm_memory_total_megabytes{job="python_exporter"}) * 100 > 85
+      for: 2m
+      labels:
+        severity: critical
+      annotations:
+        summary: "RAM presque saturée sur {{ $labels.vm_name }}"
+        description: "L'utilisation mémoire dépasse 90% sur la vm."
+
+    - alert: NodeRootDiskLow
+      expr: (vm_filesystem_size_bytes{mountpoint="/"} - vm_filesystem_free_bytes{mountpoint="/"}) / vm_filesystem_size_bytes{mountpoint="/"} * 100 > 90
+      for: 2m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Espace disque faible sur {{ $labels.vm_name }}"
+        description: "Le disque root est rempli à plus de 90%."
+
+    - alert: VmRebooted
+      expr: vm_uptime_seconds{job="python_exporter"} < 300 and vm_state_running{job="your_vm_exporter_job_name"} == 1
+      for: 0m
+      labels:
+        severity: info
+      annotations:
+        summary: "Redémarrage détecté sur {{ $labels.vm_name }}"
+        description: "La vm a été redémarré il y a moins de 5 minutes."
+
+    - alert: ExporterDown
+      expr: up{job="python_exporter"} == 0
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "VM inaccessible détectée"
+        description: "Une VM supervisée semble être down."
+
+    - alert: HighNetworkTraffic
+      expr: rate(vm_network_receive_bytes_total[2m]) > 100000000 or rate(vm_network_transmit_bytes_total[2m]) > 100000000
+      for: 1m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Trafic réseau élevé sur {{ $labels.vm_name }}"
+        description: "Le trafic réseau entrant ou sortant dépasse 100MB/s."
+
+    - alert: VmHighCPUUsage
+      expr: vm_cpu_usage_percent > 80
+      for: 1m
+      labels:
+        severity: warning
+      annotations:
+        summary: "CPU élevé sur {{ $labels.vm_name }}"
+        description: "L'utilisation CPU sur la vm est supérieure à 85% depuis 2 minutes."
+
