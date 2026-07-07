@@ -1,9 +1,12 @@
 import requests
 import urllib3
 import os
+from dotenv import load_dotenv
 from prometheus_client import start_http_server, Gauge
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+load_dotenv()
 
 host = os.getenv("HOST")
 username = os.getenv("USERNAME")
@@ -32,6 +35,8 @@ def authenticate(host, username, password):
             "csrf_token": token["CSRFPreventionToken"]
         }
     else:
+        print(f"Status: {resp.status_code}")
+        print(f"Réponse: {resp.text}")
         raise Exception("Échec de l'authentification")
 
 session = authenticate(host, username, password)
@@ -98,9 +103,12 @@ def get_all_vms_detailed_metrics(host, base_url, session):
 if __name__ == "__main__":
     print("Serveur Prometheus en écoute sur le port 8000...")
     start_http_server(8000)
+    import time
 
     while True:
-        get_all_vms_detailed_metrics(host, base_url, session)
-        import time
-        time.sleep(30)  # actualise toutes les 30 secondes
-
+        try:
+            session = authenticate(host, username, password)
+            get_all_vms_detailed_metrics(host, base_url, session)
+        except Exception as e:
+            print(f"Erreur de collecte : {e}")
+        time.sleep(30)
