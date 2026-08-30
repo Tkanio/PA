@@ -1,58 +1,121 @@
 groups:
   - name: proxmox-alerts
     rules:
-    
-    - alert: NodeHighMemoryUsage
-      expr: (vm_memory_used_megabytes{job="python_exporter"} / vm_memory_total_megabytes{job="python_exporter"}) * 100 > 85
+
+    - alert: VmHighMemoryUsage
+      expr: (vm_memory_used_megabytes / vm_memory_total_megabytes) * 100 > 85
       for: 2m
       labels:
         severity: critical
       annotations:
         summary: "RAM presque saturée sur {{ $labels.vm_name }}"
-        description: "L'utilisation mémoire dépasse 90% sur la vm."
+        description: "Utilisation mémoire à {{ $value | printf \"%.0f\" }}% (> 85% depuis 2 min)."
 
-    - alert: NodeRootDiskLow
-      expr: (vm_filesystem_size_bytes{mountpoint="/"} - vm_filesystem_free_bytes{mountpoint="/"}) / vm_filesystem_size_bytes{mountpoint="/"} * 100 > 90
-      for: 2m
+    - alert: VmRootDiskLow
+      expr: (vm_disk_used_gigabytes / vm_disk_total_gigabytes) * 100 > 90
+      for: 5m
       labels:
         severity: warning
       annotations:
         summary: "Espace disque faible sur {{ $labels.vm_name }}"
-        description: "Le disque root est rempli à plus de 90%."
+        description: "Le disque est rempli à {{ $value | printf \"%.0f\" }}% (> 90%)."
 
     - alert: VmRebooted
-      expr: vm_uptime_seconds{job="python_exporter"} < 300 and vm_state_running{job="your_vm_exporter_job_name"} == 1
-      for: 0m
+      expr: vm_uptime_seconds > 0 and vm_uptime_seconds < 300
       labels:
         severity: info
       annotations:
         summary: "Redémarrage détecté sur {{ $labels.vm_name }}"
-        description: "La vm a été redémarré il y a moins de 5 minutes."
+        description: "La VM a démarré il y a moins de 5 minutes."
 
-    - alert: ExporterDown
-      expr: up{job="python_exporter"} == 0
+    - alert: ProxmoxExporterDown
+      expr: up{job="proxmox-exporter"} == 0
       for: 1m
       labels:
         severity: critical
       annotations:
-        summary: "VM inaccessible détectée"
-        description: "Une VM supervisée semble être down."
+        summary: "Exporter Proxmox injoignable"
+        description: "Prometheus ne parvient plus à scraper 192.168.1.66:8000 — plus aucune métrique VM ne remonte."
 
-    - alert: HighNetworkTraffic
-      expr: rate(vm_network_receive_bytes_total[2m]) > 100000000 or rate(vm_network_transmit_bytes_total[2m]) > 100000000
-      for: 1m
+    - alert: VmHighNetworkTraffic
+      expr: rate(vm_network_rx_megabytes[5m]) > 100 or rate(vm_network_tx_megabytes[5m]) > 100
+      for: 5m
       labels:
         severity: warning
       annotations:
         summary: "Trafic réseau élevé sur {{ $labels.vm_name }}"
-        description: "Le trafic réseau entrant ou sortant dépasse 100MB/s."
+        description: "Débit supérieur à 100 Mo/s soutenu depuis 5 minutes."
 
     - alert: VmHighCPUUsage
       expr: vm_cpu_usage_percent > 80
-      for: 1m
+      for: 5m
       labels:
         severity: warning
       annotations:
         summary: "CPU élevé sur {{ $labels.vm_name }}"
-        description: "L'utilisation CPU sur la vm est supérieure à 85% depuis 2 minutes."
+        description: "Utilisation CPU à {{ $value | printf \"%.0f\" }}% (> 80% depuis 5 min)."
 
+  - name: ubika-waap-alerts
+    rules:
+
+    - alert: UbikaExporterDown
+      expr: up{job="ubika-waap"} == 0
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "Exporter UBIKA injoignable"
+        description: "Prometheus ne parvient plus à scraper 192.168.1.66:8001."
+
+    - alert: WaapApiDown
+      expr: ubika_up == 0
+      for: 2m
+      labels:
+        severity: critical
+      annotations:
+        summary: "API du WAAP Gateway injoignable"
+        description: "L'exporter fonctionne mais l'API UBIKA (192.168.1.11:3001) ne répond plus."
+
+    - alert: TunnelBackendDown
+      expr: ubika_tunnel_backend_status == 0
+      for: 2m
+      labels:
+        severity: critical
+      annotations:
+        summary: "Backend du tunnel {{ $labels.tunnel }} injoignable"
+        description: "Le serveur applicatif derrière le WAF ne répond plus — l'application est probablement indisponible."
+
+    - alert: TunnelNotListening
+      expr: ubika_tunnel_listening_status == 0
+      for: 2m
+      labels:
+        severity: critical
+      annotations:
+        summary: "Tunnel {{ $labels.tunnel }} plus en écoute"
+        description: "Le tunnel n'accepte plus de connexions entrantes."
+
+    - alert: TunnelRuntimeDegraded
+      expr: ubika_tunnel_runtime_status < 2
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Runtime dégradé sur le tunnel {{ $labels.tunnel }}"
+        description: "Statut runtime en Warning ou Error depuis 5 minutes."
+
+    - alert: LicenseExpiringSoon
+      expr: (ubika_license_expiry_timestamp_seconds - time()) / 86400 < 30
+      labels:
+        severity: warning
+      annotations:
+        summary: "Licence UBIKA expire bientôt"
+        description: "La licence expire dans {{ $value | printf \"%.0f\" }} jours."
+
+    - alert: SecurityEventsSpike
+      expr: ubika_security_events_last_hour > 50
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Pic d'attaques détecté par le WAAP"
+        description: "{{ $value | printf \"%.0f\" }} événements de sécurité sur la dernière heure (seuil : 50)."

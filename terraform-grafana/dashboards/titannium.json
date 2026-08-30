@@ -1,0 +1,416 @@
+{
+  "title": "Titannium — Infrastructure VMs",
+  "uid": "titannium",
+  "tags": ["proxmox", "monitoring", "titannium"],
+  "timezone": "browser",
+  "refresh": "30s",
+  "time": {
+    "from": "now-3h",
+    "to": "now"
+  },
+  "schemaVersion": 39,
+  "version": 1,
+  "editable": true,
+  "panels": [
+    {
+      "id": 1,
+      "type": "row",
+      "title": "Vue d'ensemble infrastructure",
+      "collapsed": false,
+      "gridPos": { "x": 0, "y": 0, "w": 24, "h": 1 },
+      "panels": []
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Exporter Proxmox",
+      "gridPos": { "x": 0, "y": 1, "w": 4, "h": 4 },
+      "targets": [
+        {
+          "expr": "up{job=\"proxmox-exporter\"}",
+          "refId": "A",
+          "legendFormat": "__auto",
+          "datasource": { "type": "prometheus", "uid": "${datasource_uid}" }
+        }
+      ],
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "values": false },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "1": { "text": "UP", "color": "green", "index": 0 },
+                "0": { "text": "DOWN", "color": "red", "index": 1 }
+              }
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [{ "color": "green", "value": null }]
+          }
+        },
+        "overrides": []
+      },
+      "datasource": { "type": "prometheus", "uid": "${datasource_uid}" }
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "VMs supervisées",
+      "gridPos": { "x": 4, "y": 1, "w": 5, "h": 4 },
+      "targets": [
+        {
+          "expr": "count(vm_uptime_seconds)",
+          "refId": "A",
+          "legendFormat": "__auto",
+          "datasource": { "type": "prometheus", "uid": "${datasource_uid}" }
+        }
+      ],
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "values": false },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [{ "color": "blue", "value": null }]
+          }
+        },
+        "overrides": []
+      },
+      "datasource": { "type": "prometheus", "uid": "${datasource_uid}" }
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "CPU moyen",
+      "gridPos": { "x": 9, "y": 1, "w": 5, "h": 4 },
+      "targets": [
+        {
+          "expr": "avg(vm_cpu_usage_percent)",
+          "refId": "A",
+          "legendFormat": "__auto",
+          "datasource": { "type": "prometheus", "uid": "${datasource_uid}" }
+        }
+      ],
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "values": false },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "orange", "value": 60 },
+              { "color": "red", "value": 80 }
+            ]
+          },
+          "unit": "percent",
+          "decimals": 1
+        },
+        "overrides": []
+      },
+      "datasource": { "type": "prometheus", "uid": "${datasource_uid}" }
+    },
+    {
+      "id": 5,
+      "type": "stat",
+      "title": "RAM allouée",
+      "gridPos": { "x": 14, "y": 1, "w": 5, "h": 4 },
+      "targets": [
+        {
+          "expr": "sum(vm_memory_total_megabytes)",
+          "refId": "A",
+          "legendFormat": "__auto",
+          "datasource": { "type": "prometheus", "uid": "${datasource_uid}" }
+        }
+      ],
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "values": false },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [{ "color": "purple", "value": null }]
+          },
+          "unit": "decmbytes"
+        },
+        "overrides": []
+      },
+      "datasource": { "type": "prometheus", "uid": "${datasource_uid}" }
+    },
+    {
+      "id": 6,
+      "type": "stat",
+      "title": "Disque alloué",
+      "gridPos": { "x": 19, "y": 1, "w": 5, "h": 4 },
+      "targets": [
+        {
+          "expr": "sum(vm_disk_total_gigabytes)",
+          "refId": "A",
+          "legendFormat": "__auto",
+          "datasource": { "type": "prometheus", "uid": "${datasource_uid}" }
+        }
+      ],
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "values": false },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [{ "color": "purple", "value": null }]
+          },
+          "unit": "decgbytes"
+        },
+        "overrides": []
+      },
+      "datasource": { "type": "prometheus", "uid": "${datasource_uid}" }
+    },
+    {
+      "id": 7,
+      "type": "row",
+      "title": "Ressources par VM",
+      "collapsed": false,
+      "gridPos": { "x": 0, "y": 5, "w": 24, "h": 1 },
+      "panels": []
+    },
+    {
+      "id": 8,
+      "type": "timeseries",
+      "title": "CPU (%)",
+      "gridPos": { "x": 0, "y": 6, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "vm_cpu_usage_percent",
+          "refId": "A",
+          "legendFormat": "{{vm_name}}",
+          "datasource": { "type": "prometheus", "uid": "${datasource_uid}" }
+        }
+      ],
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": true
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [{ "color": "green", "value": null }]
+          },
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        },
+        "overrides": []
+      },
+      "datasource": { "type": "prometheus", "uid": "${datasource_uid}" }
+    },
+    {
+      "id": 9,
+      "type": "timeseries",
+      "title": "RAM utilisée (%)",
+      "gridPos": { "x": 12, "y": 6, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "vm_memory_used_megabytes / vm_memory_total_megabytes * 100",
+          "refId": "A",
+          "legendFormat": "{{vm_name}}",
+          "datasource": { "type": "prometheus", "uid": "${datasource_uid}" }
+        }
+      ],
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": true
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [{ "color": "green", "value": null }]
+          },
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        },
+        "overrides": []
+      },
+      "datasource": { "type": "prometheus", "uid": "${datasource_uid}" }
+    },
+    {
+      "id": 10,
+      "type": "bargauge",
+      "title": "Disque alloué par VM",
+      "gridPos": { "x": 0, "y": 14, "w": 12, "h": 7 },
+      "targets": [
+        {
+          "expr": "vm_disk_total_gigabytes",
+          "refId": "A",
+          "legendFormat": "{{vm_name}}",
+          "datasource": { "type": "prometheus", "uid": "${datasource_uid}" }
+        }
+      ],
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "horizontal",
+        "namePlacement": "left",
+        "showUnfilled": true,
+        "sizing": "auto",
+        "valueMode": "color",
+        "maxVizHeight": 300,
+        "minVizHeight": 16,
+        "minVizWidth": 8,
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "continuous-BlPu" },
+          "unit": "decgbytes",
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [{ "color": "blue", "value": null }]
+          }
+        },
+        "overrides": []
+      },
+      "datasource": { "type": "prometheus", "uid": "${datasource_uid}" }
+    },
+    {
+      "id": 11,
+      "type": "stat",
+      "title": "Uptime par VM",
+      "gridPos": { "x": 12, "y": 14, "w": 12, "h": 7 },
+      "targets": [
+        {
+          "expr": "vm_uptime_seconds",
+          "refId": "A",
+          "legendFormat": "{{vm_name}}",
+          "datasource": { "type": "prometheus", "uid": "${datasource_uid}" }
+        }
+      ],
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "values": false },
+        "orientation": "auto",
+        "textMode": "value_and_name",
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "green", "value": 300 }
+            ]
+          },
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "datasource": { "type": "prometheus", "uid": "${datasource_uid}" }
+    },
+    {
+      "id": 12,
+      "type": "row",
+      "title": "Réseau",
+      "collapsed": false,
+      "gridPos": { "x": 0, "y": 21, "w": 24, "h": 1 },
+      "panels": []
+    },
+    {
+      "id": 13,
+      "type": "timeseries",
+      "title": "Débit réseau par VM",
+      "gridPos": { "x": 0, "y": 22, "w": 24, "h": 8 },
+      "targets": [
+        {
+          "expr": "rate(vm_network_rx_megabytes[5m])",
+          "refId": "A",
+          "legendFormat": "{{vm_name}} ↓ RX",
+          "datasource": { "type": "prometheus", "uid": "${datasource_uid}" }
+        },
+        {
+          "expr": "rate(vm_network_tx_megabytes[5m])",
+          "refId": "B",
+          "legendFormat": "{{vm_name}} ↑ TX",
+          "datasource": { "type": "prometheus", "uid": "${datasource_uid}" }
+        }
+      ],
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": true
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [{ "color": "green", "value": null }]
+          },
+          "unit": "MBs",
+          "min": 0
+        },
+        "overrides": []
+      },
+      "datasource": { "type": "prometheus", "uid": "${datasource_uid}" }
+    }
+  ]
+}

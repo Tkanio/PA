@@ -1,16 +1,24 @@
 global:
   smtp_smarthost: 'smtp.gmail.com:587'
-  smtp_from: 'alerting(example)@gmail.com'
-  smtp_auth_username: 'alerting(example)@gmail.com'
-  smtp_auth_password: ''
+  smtp_from: 'alertingtitannium@gmail.com'
+  smtp_auth_username: 'alertingtitannium@gmail.com'
+  smtp_auth_password_file: '/etc/alertmanager/secrets/smtp_password.txt'
   smtp_require_tls: true
 
 route:
   receiver: 'email-alert'
+  group_by: ['alertname', 'vm_name', 'tunnel']
+  group_wait: 30s        # attend 30s pour regrouper les alertes similaires dans un seul mail
+  group_interval: 5m     # délai avant un mail pour une nouvelle alerte du même groupe
+  repeat_interval: 4h    # re-notification d'une alerte toujours active
 
 receivers:
   - name: 'email-alert'
     email_configs:
-      - to: 'alerting@titannium.fr'
+      - to: 'alertingtitannium@gmail.com'
         send_resolved: true
 
+inhibit_rules:
+  # Si l'exporter est down, inutile d'alerter aussi sur l'API WAAP injoignable
+  - source_matchers: ['alertname = UbikaExporterDown']
+    target_matchers: ['alertname = WaapApiDown']
